@@ -1,0 +1,111 @@
+{
+  "name": "datocms-plugin-deepl-translate-button",
+  "homepage": "https://github.com/SKLINET/datocms-plugin-deepl-translate-button",
+  "version": "0.0.1",
+  "description": "Translate localized fields with DeepL button for DatoCMS",
+  "main": "public/bundle.js",
+  "scripts": {
+    "start": "concurrently \"yarn dev\" \"yarn localtunnel\"",
+    "localtunnel": "lt -s datocms-plugin-deepl-translate-button --port 5000",
+    "dev": "NODE_ENV=development webpack-dev-server --port 5000",
+    "dist": "NODE_ENV=production webpack --progress",
+    "build": "NODE_ENV=production webpack --progress",
+    "prepublishOnly": "rimraf lib public && mkdir public && npm run dist",
+    "addToProject": "yo datocms-plugin:add-to-project",
+    "test": "echo 1"
+  },
+  "keywords": [
+    "datocms",
+    "datocms-plugin",
+    "sidebar",
+    "boolean-field"
+  ],
+  "files": [
+    "public",
+    "docs"
+  ],
+  "author": "SKLINET <dev@sklinet.com>",
+  "license": "ISC",
+  "datoCmsPlugin": {
+    "title": "DeepL Translate Button",
+    "previewImage": "docs/preview.gif",
+    "coverImage": "docs/cover.png",
+    "entryPoint": "public/index.html",
+    "pluginType": "sidebar",
+    "fieldTypes": [
+      "boolean"
+    ],
+    "parameters": {
+      "global": [
+        {
+          "id": "developmentMode",
+          "label": "Development mode",
+          "type": "boolean",
+          "required": true,
+          "default": false,
+          "hint": "Shows debug messages in console"
+        },
+        {
+          "id": "deepLAuthenticationKey",
+          "label": "DeepL Autentication Key",
+          "type": "string",
+          "required": true,
+          "hint": "The DeepL Authentication Key to use (see https://www.deepl.com/docs-api/accessing-the-api/authentication)",
+          "default": "df4385c2-33de-e423-4134-ca1f7b3ea8b7"
+        },
+        {
+          "id": "useFreeDeeplApi",
+          "label": "Use free DeepL API ?",
+          "type": "boolean",
+          "required": true,
+          "default": false,
+          "hint": ""
+        },
+        {
+          "id": "label",
+          "label": "Button label",
+          "type": "string",
+          "required": false,
+          "default": "Translate with DeepL",
+          "hint": "Label of button in the sidebar"
+        }
+      ],
+      "instance": []
+    }
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.4",
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/register": "^7.10.4",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.0.6",
+    "concurrently": "^5.2.0",
+    "css-loader": "^3.6.0",
+    "eslint": "^7.4.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-import-resolver-webpack": "^0.12.2",
+    "eslint-loader": "^4.0.2",
+    "eslint-plugin-import": "^2.22.0",
+    "generator-datocms-plugin": "^1.0.26",
+    "html-webpack-inline-source-plugin": "^0.0.10",
+    "html-webpack-plugin": "^4.3.0",
+    "html-webpack-tags-plugin": "^2.0.17",
+    "localtunnel": "^2.0.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "prettier": "^2.0.5",
+    "serve": "^11.3.2",
+    "style-loader": "^0.23.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "yo": "^4.3.0"
+  },
+  "dependencies": {
+    "to-querystring": "^1.1.1"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all"
+  }
+}
