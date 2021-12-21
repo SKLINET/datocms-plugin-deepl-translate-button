@@ -1,7 +1,7 @@
 {
   "name": "datocms-plugin-deepl-translate-button",
   "homepage": "https://github.com/SKLINET/datocms-plugin-deepl-translate-button",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Translate localized fields with DeepL button for DatoCMS",
   "main": "public/bundle.js",
   "scripts": {

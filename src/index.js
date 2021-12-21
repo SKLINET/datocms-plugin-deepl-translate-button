@@ -70,9 +70,16 @@ window.DatoCmsPlugin.init((plugin) => {
   button.onclick = (e) => {
     localizedFields?.map((f) => {
       const field = f?.attributes?.api_key;
-      const sourceValue = plugin.getFieldValue(field, currentLocale);
+      let sourceValue = plugin.getFieldValue(field, currentLocale);
       if (typeof sourceValue !== 'string') {
         if (Array.isArray(sourceValue)) {
+          const vals = [];
+          sourceValue.map((ss) => {
+            const { itemId, ...rest } = ss;
+            vals.push(rest);
+            return ss;
+          });
+          sourceValue = vals;
           return sourceValue.map((sv, i) => Object.keys(sv)?.map((p) => {
             if (typeof sv[p] === 'string' && sv[p].match(/^[0-9]+$/) === null) {
               return translate(sv[p], field, p, i, sourceValue);
