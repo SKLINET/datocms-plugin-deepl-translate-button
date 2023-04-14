@@ -29,21 +29,29 @@ window.DatoCmsPlugin.init((plugin) => {
         return Promise.resolve();
       }
 
-      const qs = toQueryString({
-        auth_key: plugin.parameters.global.deepLAuthenticationKey,
+      const authKey = plugin.parameters.global.deepLAuthenticationKey;
+      const parameters = {
         source_lang: currentLocale.substring(0, 2).toUpperCase(),
         target_lang: locale.substring(0, 2).toUpperCase(),
-        tag_handling: 'xml',
+        tag_handling: 'html',
         text,
-      });
+        ignore_tags: "img,iframe",
+      }
 
       if (plugin.parameters.global.developmentMode) {
         console.log(`Fetching '${locale}' translation for '${text}' and write to field '${field}'`);
       }
 
-      const apiUrl = plugin.parameters.global.useFreeDeeplApi ? `https://api-free.deepl.com/v2/translate?${qs}` : `https://api.deepl.com/v2/translate?${qs}`;
+      const apiUrl = plugin.parameters.global.useFreeDeeplApi ? `https://api-free.deepl.com/v2/translate` : `https://api.deepl.com/v2/translate`;
 
-      return fetch(apiUrl)
+      return fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Deepl-Auth-Key ${authKey}`
+        },
+        body: JSON.stringify(parameters),
+      })
         .then((res) => res.json())
         .then((response) => {
           const trans = response.translations
