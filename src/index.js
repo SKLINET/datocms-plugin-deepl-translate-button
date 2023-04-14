@@ -1,4 +1,3 @@
-import toQueryString from 'to-querystring';
 import './style.css';
 
 window.DatoCmsPlugin.init((plugin) => {
@@ -35,20 +34,20 @@ window.DatoCmsPlugin.init((plugin) => {
         target_lang: locale.substring(0, 2).toUpperCase(),
         tag_handling: 'html',
         text,
-        ignore_tags: "img,iframe",
-      }
+        ignore_tags: 'img,iframe',
+      };
 
       if (plugin.parameters.global.developmentMode) {
         console.log(`Fetching '${locale}' translation for '${text}' and write to field '${field}'`);
       }
 
-      const apiUrl = plugin.parameters.global.useFreeDeeplApi ? `https://api-free.deepl.com/v2/translate` : `https://api.deepl.com/v2/translate`;
+      const apiUrl = plugin.parameters.global.useFreeDeeplApi ? 'https://api-free.deepl.com/v2/translate' : 'https://api.deepl.com/v2/translate';
 
       return fetch(apiUrl, {
         method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Deepl-Auth-Key ${authKey}`
+          'Content-Type': 'application/json',
+          Authorization: `Deepl-Auth-Key ${authKey}`,
         },
         body: JSON.stringify(parameters),
       })
