@@ -1,4 +1,5 @@
 import './style.css';
+import toQueryString from 'to-querystring';
 
 window.DatoCmsPlugin.init((plugin) => {
   plugin.startAutoResizer();
@@ -29,28 +30,38 @@ window.DatoCmsPlugin.init((plugin) => {
       }
 
       const authKey = plugin.parameters.global.deepLAuthenticationKey;
+      const { postRequestUrl } = plugin.parameters.global;
       const parameters = {
         source_lang: currentLocale.substring(0, 2).toUpperCase(),
         target_lang: locale.substring(0, 2).toUpperCase(),
         tag_handling: 'html',
         text,
         ignore_tags: 'img,iframe',
+        auth_key: authKey,
       };
 
       if (plugin.parameters.global.developmentMode) {
         console.log(`Fetching '${locale}' translation for '${text}' and write to field '${field}'`);
       }
 
-      const apiUrl = plugin.parameters.global.useFreeDeeplApi ? 'https://api-free.deepl.com/v2/translate' : 'https://api.deepl.com/v2/translate';
+      let apiUrl = '';
+      if (postRequestUrl) {
+        apiUrl = plugin.parameters.global.useFreeDeeplApi ? 'https://api-free.deepl.com/v2/translate' : 'https://api.deepl.com/v2/translate';
+        parameters.url = apiUrl;
+      } else {
+        const qs = toQueryString(parameters);
+        apiUrl = plugin.parameters.global.useFreeDeeplApi ? `https://api-free.deepl.com/v2/translate?${qs}` : `https://api.deepl.com/v2/translate?${qs}`;
+      }
 
-      return fetch(apiUrl, {
+      const config = postRequestUrl ? {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Deepl-Auth-Key ${authKey}`,
         },
         body: JSON.stringify(parameters),
-      })
+      } : {};
+
+      return fetch(postRequestUrl || apiUrl, config)
         .then((res) => res.json())
         .then((response) => {
           const trans = response.translations
