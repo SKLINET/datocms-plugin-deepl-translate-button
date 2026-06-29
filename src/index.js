@@ -16,6 +16,77 @@ window.DatoCmsPlugin.init((plugin) => {
     }
   });
 
+  const buildRequest = (text, locale) => {
+    const authKey = plugin.parameters.global.deepLAuthenticationKey;
+    const { postRequestUrl } = plugin.parameters.global;
+    const parameters = {
+      source_lang: currentLocale.substring(0, 2).toUpperCase(),
+      target_lang: locale.substring(0, 2).toUpperCase(),
+      tag_handling: 'html',
+      text,
+      ignore_tags: 'img,iframe',
+      auth_key: authKey,
+    };
+
+    let apiUrl = '';
+    if (postRequestUrl) {
+      apiUrl = plugin.parameters.global.useFreeDeeplApi
+        ? 'https://api-free.deepl.com/v2/translate'
+        : 'https://api.deepl.com/v2/translate';
+      parameters.url = apiUrl;
+    } else {
+      const qs = toQueryString(parameters);
+      apiUrl = plugin.parameters.global.useFreeDeeplApi
+        ? `https://api-free.deepl.com/v2/translate?${qs}`
+        : `https://api.deepl.com/v2/translate?${qs}`;
+    }
+
+    const config = postRequestUrl ? {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(parameters),
+    } : {};
+
+    return { url: postRequestUrl || apiUrl, config };
+  };
+
+  const fetchTranslation = (text, locale) => {
+    if (!text || !text.trim()) return Promise.resolve(text);
+    const { url, config } = buildRequest(text, locale);
+    return fetch(url, config)
+      .then((res) => res.json())
+      .then((response) => response.translations.map((t) => t.text).join(' '));
+  };
+
+  // Recursively walk a DAST node and translate all span values
+  const translateDastNode = (node, locale) => {
+    if (!node) return Promise.resolve(node);
+    if (node.type === 'span' && typeof node.value === 'string') {
+      if (!node.value.trim()) return Promise.resolve({ ...node });
+      return fetchTranslation(node.value, locale).then((translated) => ({
+        ...node,
+        value: translated,
+      }));
+    }
+    if (node.children && node.children.length) {
+      return Promise.all(node.children.map((child) => translateDastNode(child, locale)))
+        .then((translatedChildren) => ({ ...node, children: translatedChildren }));
+    }
+    return Promise.resolve({ ...node });
+  };
+
+  const translateStructuredText = (dastValue, field) => Promise.all(
+    localesToTranslate.map((locale) => {
+      if (!dastValue || !dastValue.document) return Promise.resolve();
+      if (plugin.parameters.global.developmentMode) {
+        console.log(`Fetching '${locale}' structured_text translation for field '${field}'`);
+      }
+      return translateDastNode(dastValue.document, locale).then((translatedDocument) => {
+        plugin.setFieldValue(field, locale, { ...dastValue, document: translatedDocument });
+      });
+    }),
+  );
+
   const translate = (
     text,
     field,
@@ -29,52 +100,19 @@ window.DatoCmsPlugin.init((plugin) => {
         return Promise.resolve();
       }
 
-      const authKey = plugin.parameters.global.deepLAuthenticationKey;
-      const { postRequestUrl } = plugin.parameters.global;
-      const parameters = {
-        source_lang: currentLocale.substring(0, 2).toUpperCase(),
-        target_lang: locale.substring(0, 2).toUpperCase(),
-        tag_handling: 'html',
-        text,
-        ignore_tags: 'img,iframe',
-        auth_key: authKey,
-      };
-
       if (plugin.parameters.global.developmentMode) {
         console.log(`Fetching '${locale}' translation for '${text}' and write to field '${field}'`);
       }
 
-      let apiUrl = '';
-      if (postRequestUrl) {
-        apiUrl = plugin.parameters.global.useFreeDeeplApi ? 'https://api-free.deepl.com/v2/translate' : 'https://api.deepl.com/v2/translate';
-        parameters.url = apiUrl;
-      } else {
-        const qs = toQueryString(parameters);
-        apiUrl = plugin.parameters.global.useFreeDeeplApi ? `https://api-free.deepl.com/v2/translate?${qs}` : `https://api.deepl.com/v2/translate?${qs}`;
-      }
-
-      const config = postRequestUrl ? {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(parameters),
-      } : {};
-
-      return fetch(postRequestUrl || apiUrl, config)
-        .then((res) => res.json())
-        .then((response) => {
-          const trans = response.translations
-            .map((translation) => translation.text)
-            .join(' ');
-          if (composedField && composedValue) {
-            const newVal = composedValue;
-            newVal[composedIndex][composedField] = trans;
-            plugin.setFieldValue(field, locale, newVal);
-          } else {
-            plugin.setFieldValue(field, locale, trans);
-          }
-        });
+      return fetchTranslation(text, locale).then((trans) => {
+        if (composedField && composedValue) {
+          const newVal = composedValue;
+          newVal[composedIndex][composedField] = trans;
+          plugin.setFieldValue(field, locale, newVal);
+        } else {
+          plugin.setFieldValue(field, locale, trans);
+        }
+      });
     }),
   );
 
@@ -88,7 +126,13 @@ window.DatoCmsPlugin.init((plugin) => {
   button.onclick = (e) => {
     localizedFields?.map((f) => {
       const field = f?.attributes?.api_key;
+      const fieldType = f?.attributes?.field_type;
       let sourceValue = plugin.getFieldValue(field, currentLocale);
+
+      if (fieldType === 'structured_text') {
+        return translateStructuredText(sourceValue, field);
+      }
+
       if (typeof sourceValue !== 'string') {
         if (Array.isArray(sourceValue)) {
           const vals = [];
