@@ -1,8 +1,11 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
+
+let root: Root | undefined;
 
 export function render(component: React.ReactNode): void {
-  const root = document.getElementById('root');
-  if (!root) return;
-  createRoot(root).render(<React.StrictMode>{component}</React.StrictMode>);
+  const container = document.getElementById('root');
+  if (!container) return;
+  if (!root) root = createRoot(container);
+  root.render(<React.StrictMode>{component}</React.StrictMode>);
 }

@@ -23,11 +23,13 @@ connect({
         id: 'deeplTranslate',
         label,
         startOpen: true,
+        initialHeight: 80,
       },
     ];
   },
 
   renderItemFormSidebarPanel(_sidebarPanelId, ctx) {
+    ctx.startAutoResizer();
     render(<SidebarPanel ctx={ctx} />);
   },
 
