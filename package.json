@@ -1,7 +1,7 @@
 {
   "name": "datocms-plugin-deepl-translate-button",
   "homepage": "https://github.com/SKLINET/datocms-plugin-deepl-translate-button",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Translate localized fields with DeepL button for DatoCMS",
   "main": "dist/index.js",
   "scripts": {
@@ -29,55 +29,7 @@
     "previewImage": "docs/image.png",
     "coverImage": "docs/image.png",
     "entryPoint": "dist/index.html",
-    "permissions": [],
-    "pluginType": "sidebar",
-    "fieldTypes": [
-      "boolean"
-    ],
-    "parameters": {
-      "global": [
-        {
-          "id": "developmentMode",
-          "label": "Development mode",
-          "type": "boolean",
-          "required": false,
-          "default": false,
-          "hint": "Shows debug messages in console"
-        },
-        {
-          "id": "deepLAuthenticationKey",
-          "label": "DeepL Authentication Key",
-          "type": "string",
-          "required": true,
-          "hint": "The DeepL Authentication Key to use (see https://www.deepl.com/docs-api/accessing-the-api/authentication)"
-        },
-        {
-          "id": "useFreeDeeplApi",
-          "label": "Use free DeepL API ?",
-          "type": "boolean",
-          "required": false,
-          "default": false,
-          "hint": "Leave this off to use the paid DeepL Pro API (api.deepl.com). Turn it on only for a DeepL Free key."
-        },
-        {
-          "id": "postRequestUrl",
-          "label": "POST request url",
-          "type": "string",
-          "required": false,
-          "hint": "URL for custom POST request",
-          "default": ""
-        },
-        {
-          "id": "label",
-          "label": "Button label",
-          "type": "string",
-          "required": false,
-          "default": "Translate with DeepL",
-          "hint": "Label of button in the sidebar"
-        }
-      ],
-      "instance": []
-    }
+    "permissions": []
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

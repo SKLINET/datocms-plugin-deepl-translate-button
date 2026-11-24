@@ -1,31 +1,28 @@
 const assert = require('assert');
-const pkg = require('../package.json');
-
-function parameter(id) {
-  const globalParams = pkg.datoCmsPlugin && pkg.datoCmsPlugin.parameters && pkg.datoCmsPlugin.parameters.global;
-  assert.ok(Array.isArray(globalParams), 'plugin must declare global parameters');
-  const found = globalParams.find((item) => item.id === id);
-  assert.ok(found, `missing parameter ${id}`);
-  return found;
-}
-
-const useFreeDeeplApi = parameter('useFreeDeeplApi');
-assert.strictEqual(
-  useFreeDeeplApi.required,
-  false,
-  'Use free DeepL API must accept off (false) so a Pro key can be saved',
-);
-assert.strictEqual(useFreeDeeplApi.default, false);
-
-const developmentMode = parameter('developmentMode');
-assert.strictEqual(
-  developmentMode.required,
-  false,
-  'Development mode must accept off (false); a required boolean cannot be saved as false',
-);
-
 const fs = require('fs');
 const path = require('path');
+const pkg = require('../package.json');
+
+const meta = pkg.datoCmsPlugin;
+assert.ok(meta && meta.entryPoint, 'datoCmsPlugin.entryPoint is required for the Marketplace');
+assert.ok(Array.isArray(meta.permissions), 'datoCmsPlugin.permissions is required for the Marketplace');
+for (const legacyKey of ['pluginType', 'fieldTypes', 'parameters']) {
+  assert.ok(
+    !(legacyKey in meta),
+    `datoCmsPlugin.${legacyKey} marks the package as a legacy plugin; DatoCMS then never runs connect() or the sidebar panel`,
+  );
+}
+
+const configSource = fs.readFileSync(
+  path.join(__dirname, '../src/entrypoints/ConfigScreen.tsx'),
+  'utf8',
+);
+const freeApiSwitch = configSource.match(/<SwitchField[^>]*name="useFreeDeeplApi"[\s\S]*?\/>/);
+assert.ok(freeApiSwitch, 'config screen must offer the free DeepL API switch');
+assert.ok(
+  !/\brequired\b/.test(freeApiSwitch[0]),
+  'Use free DeepL API must accept off (false) so a Pro key can be saved',
+);
 
 const sidebarSource = fs.readFileSync(path.join(__dirname, '../src/index.tsx'), 'utf8');
 assert.ok(
