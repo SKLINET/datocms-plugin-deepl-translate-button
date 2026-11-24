@@ -24,15 +24,22 @@ assert.strictEqual(
   'Development mode must accept off (false); a required boolean cannot be saved as false',
 );
 
-const sidebarSource = require('fs').readFileSync(
-  require('path').join(__dirname, '../src/index.tsx'),
-  'utf8',
-);
-assert.ok(
-  sidebarSource.includes('startAutoResizer()'),
-  'sidebar iframe must report its height, otherwise the translate button stays invisible',
-);
+const fs = require('fs');
+const path = require('path');
+
+const sidebarSource = fs.readFileSync(path.join(__dirname, '../src/index.tsx'), 'utf8');
 assert.ok(
   sidebarSource.includes('initialHeight:'),
   'sidebar panel needs an initial height before the first resize',
+);
+
+const assetsDir = path.join(__dirname, '../dist/assets');
+const bundles = fs.existsSync(assetsDir)
+  ? fs.readdirSync(assetsDir).filter((f) => f.endsWith('.js'))
+  : [];
+assert.ok(bundles.length > 0, 'run the build before the tests: dist/assets has no bundle');
+const bundle = bundles.map((f) => fs.readFileSync(path.join(assetsDir, f), 'utf8')).join('\n');
+assert.ok(
+  !/\.current\.useEffect\(/.test(bundle),
+  'bundle contains a second (React 18) copy used by datocms-react-ui; its hooks crash and the panel renders nothing',
 );

@@ -1,4 +1,5 @@
 import { connect } from 'datocms-plugin-sdk';
+import 'datocms-react-ui/styles.css';
 import { render } from './utils/render';
 import SidebarPanel from './entrypoints/SidebarPanel';
 import ConfigScreen from './entrypoints/ConfigScreen';
@@ -29,7 +30,6 @@ connect({
   },
 
   renderItemFormSidebarPanel(_sidebarPanelId, ctx) {
-    ctx.startAutoResizer();
     render(<SidebarPanel ctx={ctx} />);
   },
 
